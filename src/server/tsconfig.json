@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "allowJs": true,
+    "pretty": true
+  },
+  "exclude": ["__test__", "../../node_modules"],
+  "include": [".", "../typings"]
+}

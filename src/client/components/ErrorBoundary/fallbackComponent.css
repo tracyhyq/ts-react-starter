@@ -1,0 +1,19 @@
+.fallback-component {
+  height: '100%';
+  max-height: '100vh';
+  width: '100%';
+  max-width: '100vw';
+  display: 'flex';
+  flex-direction: 'column';
+  align-items: 'center';
+  text-align: 'center';
+  background-color: '#C00';
+  color: '#FFF';
+  box-sizing: 'border-box';
+  cursor: 'help';
+
+  .fallback-component-svg {
+    fill: 'currentColor';
+    flex: '1 1 auto';
+  }
+}

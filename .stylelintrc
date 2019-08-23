@@ -1,0 +1,11 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "./node_modules/prettier-stylelint/config.js"
+  ],
+  "rules": {
+    "no-descending-specificity": null,
+    "unit-blacklist": ["rem"],
+    "unit-case": "lower"
+  }
+}

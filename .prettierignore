@@ -1,0 +1,5 @@
+package.json
+package-lock.json
+*.d.ts
+logs
+*.md

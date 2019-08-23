@@ -1,0 +1,35 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowJs": false,
+    "module": "ESNext",
+    "removeComments": true,
+    "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    "strictPropertyInitialization": false,
+    "target": "ES6",
+    "strict": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "jsx": "react",
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "importHelpers": true,
+    "lib": ["es7", "dom", "es2017.object"],
+    "noImplicitAny": true,
+    "baseUrl": ".",
+    "paths": {
+      "@root/*": ["./*"],
+      "@src/*": ["./src/*"],
+      "@I/*": ["./src/interfaces/*"],
+      "@client/*": ["./src/client/*"],
+      "@server/*": ["./src/server/*"],
+      "@components/*": ["./src/client/components/*"],
+      "@clientUtils/*": ["./src/client/utils/*"],
+      "@serverUtils/*": ["./src/server/utils/*"]
+    },
+    "typeRoots": ["node_modules/@types/", "./src/typings/"]
+  },
+  "exclude": ["node_modules"]
+}

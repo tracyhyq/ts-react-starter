@@ -1,0 +1,22 @@
+{
+  "apps": [
+    {
+      "name": "ts-react-starter",
+      "script": "src/server/index.js",
+      "env": {
+        "COMMON_VARIABLE": "true",
+        "NODE_ENV": "production",
+        "BABEL_DISABLE_CACHE": 1
+      },
+      "out_file": "/dev/null",
+      "error_file": "/dev/null",
+      "exec_interpreter": "node",
+      "exec_mode": "cluster_mode",
+      "instances": 0,
+      "log_date_format": "YYYY-MM-DD HH:mm:ss|SSS Z",
+      "max_memory_restart": "700M",
+      "merge_logs": true,
+      "watch": false
+    }
+  ]
+}

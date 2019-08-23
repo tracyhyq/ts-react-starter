@@ -1,0 +1,13 @@
+.idea/
+static/
+dist/
+coverage/
+node_modules
+src/**/*.js
+src/**/*.js.map
+!src/client/lib/*.js
+.DS_Store
+.audit.json
+logs/**
+*.log
+package-lock.json
