@@ -2,7 +2,7 @@
  * @description: polyfill
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-23 15:56:39
+ * @LastEditTime: 2019-08-27 14:44:15
  */
 
 import 'tslib';
@@ -16,9 +16,9 @@ if (document && attachFastClick && attachFastClick.attach) {
   attachFastClick.attach(document.body);
 }
 // 基础库
-import 'react';
-import 'react-dom';
-import 'mobx';
-import 'mobx-react';
+// import 'react';
+// import 'react-dom';
+// import 'mobx';
+// import 'mobx-react';
 
 console.log(`当前环境：${process.env.NODE_ENV}`);

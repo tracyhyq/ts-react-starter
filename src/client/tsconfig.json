@@ -3,8 +3,7 @@
   "compilerOptions": {
     "module": "esnext",
     "target": "es5",
-    "jsx": "react",
-    "sourceMap": true
+    "jsx": "react"
   },
   "include": [".", "../typings"]
 }

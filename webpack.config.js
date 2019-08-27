@@ -2,12 +2,11 @@
  * @description:
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-23 16:08:26
+ * @LastEditTime: 2019-08-27 18:28:47
  */
 const path = require('path');
 const fs = require('fs');
 const ejs = require('ejs');
-const SourceMapDevToolPlugin = require('webpack/lib/SourceMapDevToolPlugin');
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -20,17 +19,14 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin;
-
+const Dashboard = require('webpack-dashboard');
+const DashboardPlugin = require('webpack-dashboard/plugin');
+const dashboard = new Dashboard();
 const env = process.env.NODE_ENV || 'development';
 const isProd = env === 'production';
 const isDev = env === 'development';
 const analyze = process.env.analyze || false;
 const outputPath = 'static';
-
-console.log(
-  `env: ${env}
-   analyze: ${process.env.analyze}`
-);
 
 // 自动寻找 page 目录下的所有目录，把每一个目录看成一个单页应用
 const autoWebPlugin = new AutoWebPlugin('src/client/pages', {
@@ -215,10 +211,10 @@ const webpackConfig = {
       {
         test: /\.tsx?$/,
         use: ['happypack/loader?id=ts'],
-        include: [path.resolve('src/client')],
+        include: [path.resolve(__dirname, 'src/client')],
       },
       {
-        // 增加对 CSS 文件的支持 组件库css解析 不用再postcss了
+        // 增加对 CSS 文件的支持 组件库antd css解析 不用再postcss了
         // 特别注意，MiniCssExtractPlugin.loader  不能放到happypack里面
         test: /\.css/,
         use: isDev
@@ -237,9 +233,9 @@ const webpackConfig = {
           ? [
               'css-hot-loader',
               MiniCssExtractPlugin.loader,
-              'happypack/loader?id=css',
+              'happypack/loader?id=postcss',
             ]
-          : [MiniCssExtractPlugin.loader, 'happypack/loader?id=css'],
+          : [MiniCssExtractPlugin.loader, 'happypack/loader?id=postcss'],
         include: [path.resolve(__dirname, 'src/client')],
       },
       {
@@ -251,20 +247,9 @@ const webpackConfig = {
         // 内嵌svg
         use: ['raw-loader'],
       },
-    ].concat(
-      isProd
-        ? // 只在生产环境
-          []
-        : // 只在开发环境
-          [
-            {
-              test: /\.js$/,
-              use: ['source-map-loader'],
-              enforce: 'pre',
-            },
-          ]
-    ),
+    ],
   },
+  devtool: isDev ? 'source-map' : '',
   plugins: [
     new CircularDependencyPlugin({
       // exclude detection of files based on a RegExp
@@ -282,7 +267,6 @@ const webpackConfig = {
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
       id: 'ts',
       threadPool: happyThreadPool,
-      verbose: true,
       loaders: [
         {
           loader: 'ts-loader',
@@ -299,19 +283,14 @@ const webpackConfig = {
     new HappyPack({
       id: 'postcss',
       threadPool: happyThreadPool,
-      verbose: true,
       loaders: ['css-loader', 'postcss-loader'],
     }),
     new HappyPack({
       id: 'css',
       threadPool: happyThreadPool,
-      verbose: true,
       loaders: ['css-loader'],
     }),
-    // 输出 SourceMap 方便在浏览器里调试 TS 代码
-    new SourceMapDevToolPlugin({
-      filename: '[file].map',
-    }),
+    new DashboardPlugin(dashboard.setData),
   ]
     .concat(
       isProd
@@ -327,7 +306,7 @@ const webpackConfig = {
             new MiniCssExtractPlugin({
               filename: `[name].css`,
             }),
-            new ForkTsCheckerWebpackPlugin(),
+            new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true }),
           ]
     )
     .concat(
@@ -354,32 +333,8 @@ if (isDev) {
     port: 8888,
     inline: false,
     hot: false,
+    quiet: true,
   };
 }
-
-/**
- * @name: 资源占用情况
- * @param {type}
- * @return:
- */
-const resourceCost = () => {
-  console.log(
-    `############################################################################`
-  );
-  console.log(`##         os: ${os.type()} ${os.arch()} ${os.release()}`);
-  console.log(
-    `##        ram: ${
-      os.freemem() / 1024 / 1024 / 1024 < 1
-        ? (os.freemem() / 1024 / 1024).toFixed(0) + 'MB'
-        : (os.freemem() / 1024 / 1024 / 1024).toFixed(2) + 'GB'
-    }`
-  );
-  console.log(`##       time: ${new Date()}`);
-  console.log(
-    `############################################################################`
-  );
-};
-
-resourceCost();
 
 module.exports = webpackConfig;
