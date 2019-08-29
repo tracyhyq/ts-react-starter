@@ -2,7 +2,7 @@
  * @description: 入口文件，采用按模块路由打包进行chunk分割
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-28 11:57:36
+ * @LastEditTime: 2019-08-29 15:39:46
  */
 
 import * as React from 'react';
@@ -32,7 +32,7 @@ class Entry extends React.PureComponent {
           <HashRouter>
             <Switch>
               <Route
-                path="/list/*"
+                path="/list*"
                 exact
                 render={(props) => <List {...props} />}
               />

@@ -2,7 +2,7 @@
  * @description: list模块，模块内页面路由入口
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-28 16:11:28
+ * @LastEditTime: 2019-08-29 15:33:35
  */
 
 import * as React from 'react';
@@ -17,8 +17,8 @@ export default class List extends React.Component<IProps, {}> {
   render() {
     return (
       <Switch>
-        <Route path="/list/detail/:detailId" component={Detail} />
-        <Route path="/list" component={Main} />
+        <Route path="/list/detail/:detailId" exact component={Detail} />
+        <Route path="/list" exact component={Main} />
       </Switch>
     );
   }
