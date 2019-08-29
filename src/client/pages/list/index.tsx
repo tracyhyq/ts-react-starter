@@ -1,29 +1,25 @@
 /*
- * @description: list模块，页面路由入口
+ * @description: list模块，模块内页面路由入口
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-27 09:50:20
+ * @LastEditTime: 2019-08-28 16:11:28
  */
 
 import * as React from 'react';
-import { render } from 'react-dom';
-import { HashRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router-dom';
 import Main from './main';
 import Detail from './detail';
 
-class List extends React.PureComponent<{}, {}> {
+interface IProps extends RouteComponentProps<{}> {}
+
+export default class List extends React.Component<IProps, {}> {
   render() {
     return (
-      <div className="list-wrap">
-        <HashRouter>
-          <Switch>
-            <Route path="/detail/:detailId" component={Detail} />
-            <Route path="/" component={Main} />
-          </Switch>
-        </HashRouter>
-      </div>
+      <Switch>
+        <Route path="/list/detail/:detailId" component={Detail} />
+        <Route path="/list" component={Main} />
+      </Switch>
     );
   }
 }
-
-render(<List />, document.getElementById('app'));

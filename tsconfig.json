@@ -36,9 +36,7 @@
     "node_modules",
     "static",
     "config",
-    "src/client/lib/fastclick.js",
     "postcss.config.js",
-    "tsCustomTransformer.js",
     "webpack.config.js"
   ]
 }

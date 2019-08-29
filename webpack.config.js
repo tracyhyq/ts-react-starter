@@ -1,69 +1,44 @@
 /*
- * @description:
+ * @description: 深入理解 optimization splitChunks
+    https://medium.com/dailyjs/webpack-4-splitchunks-plugin-d9fbbe091fd0
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-27 18:28:47
+ * @LastEditTime: 2019-08-29 10:03:35
  */
 const path = require('path');
-const fs = require('fs');
-const ejs = require('ejs');
 const ModuleConcatenationPlugin = require('webpack/lib/optimize/ModuleConcatenationPlugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const { AutoWebPlugin } = require('web-webpack-plugin');
-const HappyPack = require('happypack');
-const os = require('os');
-const happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
+const HTMLWebpackPlugin = require('html-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin;
-const Dashboard = require('webpack-dashboard');
-const DashboardPlugin = require('webpack-dashboard/plugin');
-const dashboard = new Dashboard();
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const chalk = require('chalk');
+const tsImportPluginFactory = require('ts-import-plugin');
 const env = process.env.NODE_ENV || 'development';
 const isProd = env === 'production';
 const isDev = env === 'development';
 const analyze = process.env.analyze || false;
 const outputPath = 'static';
 
-// 自动寻找 page 目录下的所有目录，把每一个目录看成一个单页应用
-const autoWebPlugin = new AutoWebPlugin('src/client/pages', {
-  // HTML 模版文件所在的文件路径
-  template: 'src/client/template.ejs',
-  templateCompiler: function(pageName, templateFullPath) {
-    const ejsTemplate = fs.readFileSync(templateFullPath, {
-      encoding: 'utf8',
-    });
-    return ejs.render(String(ejsTemplate), {
-      isProd: isProd,
-      isDev: isDev,
-      // 获取 pageConfig 配置, 在首页ejs里面挂载到winodw。
-      pageConfig: JSON.stringify({
-        testParam: 'testParam',
-      }),
-    });
-  },
-  // 全局样式
-  preEntrys: [path.resolve(__dirname, 'src/client/global.css')],
-});
-
 const webpackConfig = {
   mode: env || 'none',
-  entry: autoWebPlugin.entry({
-    base: path.resolve(__dirname, 'src/client/base.ts'),
-  }),
+  entry: {
+    main: path.resolve(__dirname, 'src/client/pages/index.tsx'),
+  },
   output: {
     // 给输出的文件名称加上 hash 值
-    filename: isProd ? '[name]_[chunkhash:8].js' : '[name].js',
+    filename: isProd ? '[name].bundle.[chunkhash:8].js' : '[name].bundle.js',
+    chunkFilename: isProd ? '[name].chunk.[chunkhash:8].js' : '[name].chunk.js',
     path: path.resolve(__dirname, outputPath),
   },
   // webpack4  采用 splitChunks 代替 CommonsChunksPlugin 来做代码分割
   // 详情参考： https://juejin.im/post/5ce53a7f6fb9a07eb67d668c
   optimization: {
     splitChunks: {
-      chunks: 'all',
       cacheGroups: {
         commons: {
           chunks: 'all',
@@ -79,9 +54,9 @@ const webpackConfig = {
               module.context
             );
           },
-          chunks: 'initial',
+          chunks: 'all',
           name: 'mobx-base',
-          priority: 20,
+          priority: 10,
           reuseExistingChunk: true,
         },
         reactBase: {
@@ -91,7 +66,7 @@ const webpackConfig = {
               module.context
             );
           },
-          chunks: 'initial',
+          chunks: 'all',
           name: 'react-base',
           priority: 10,
           reuseExistingChunk: true,
@@ -101,7 +76,7 @@ const webpackConfig = {
             // 直接使用 test 来做路径匹配，抽离antd相关代码
             return /node_modules\/antd/.test(module.context);
           },
-          chunks: 'initial',
+          chunks: 'all',
           name: 'antd-base',
           priority: 10,
           reuseExistingChunk: true,
@@ -111,7 +86,7 @@ const webpackConfig = {
             // 直接使用 test 来做路径匹配，抽离antd相关代码
             return /node_modules\/@ant-design/.test(module.context);
           },
-          chunks: 'initial',
+          chunks: 'all',
           name: 'antd-icons',
           priority: 10,
           reuseExistingChunk: true,
@@ -121,14 +96,14 @@ const webpackConfig = {
             // 直接使用 test 来做路径匹配，抽离rc 原子组件相关代码
             return /node_modules\/rc-*/.test(module.context);
           },
-          chunks: 'initial',
+          chunks: 'all',
           name: 'rc-components',
           priority: 10,
           reuseExistingChunk: true,
         },
         verdor: {
           test: /node_modules/, // 其他node_modules下面的模块，统一放到vendor里面
-          chunks: 'initial',
+          chunks: 'all',
           name: 'vendor',
           priority: -10,
           reuseExistingChunk: true,
@@ -168,7 +143,9 @@ const webpackConfig = {
           }),
         ]
       : [],
-    runtimeChunk: true,
+    runtimeChunk: {
+      name: 'manifest',
+    },
   },
   resolve: {
     // 先尝试 ts,tsx 后缀的 TypeScript 源码文件
@@ -193,7 +170,7 @@ const webpackConfig = {
       mobx: path.resolve(__dirname, './node_modules/mobx/lib/mobx.umd.min.js'),
       'mobx-react': path.resolve(
         __dirname,
-        './node_modules/mobx-react/dist/mobx-react.umd.js'
+        './node_modules/mobx-react/index.min.js'
       ),
       moment: 'dayjs',
       '@src': path.resolve(__dirname, './src'),
@@ -206,11 +183,29 @@ const webpackConfig = {
   },
   module: {
     // 对单独完整的未采用模块化的库文件，不需要采用递归去解析，比如react.production.min.js
-    noParse: [/react\..+\.js$/, /mobx\..+\.js$/],
+    noParse: [/react\..+\.js$/, /mobx\..+\.js/],
     rules: [
       {
         test: /\.tsx?$/,
-        use: ['happypack/loader?id=ts'],
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: 'src/client/tsconfig.json',
+              getCustomTransformers: () => ({
+                before: [
+                  tsImportPluginFactory({
+                    libraryName: 'antd',
+                    libraryDirectory: 'lib',
+                    style: 'css',
+                  }),
+                ],
+              }),
+              // disable type checker - we will use it in fork plugin
+              transpileOnly: true,
+            },
+          },
+        ],
         include: [path.resolve(__dirname, 'src/client')],
       },
       {
@@ -218,12 +213,8 @@ const webpackConfig = {
         // 特别注意，MiniCssExtractPlugin.loader  不能放到happypack里面
         test: /\.css/,
         use: isDev
-          ? [
-              'css-hot-loader',
-              MiniCssExtractPlugin.loader,
-              'happypack/loader?id=css',
-            ]
-          : [MiniCssExtractPlugin.loader, 'happypack/loader?id=css'],
+          ? ['css-hot-loader', MiniCssExtractPlugin.loader, 'css-loader']
+          : [MiniCssExtractPlugin.loader, 'css-loader'],
         exclude: [path.resolve(__dirname, 'src/client')],
       },
       {
@@ -233,9 +224,10 @@ const webpackConfig = {
           ? [
               'css-hot-loader',
               MiniCssExtractPlugin.loader,
-              'happypack/loader?id=postcss',
+              'css-loader',
+              'postcss-loader',
             ]
-          : [MiniCssExtractPlugin.loader, 'happypack/loader?id=postcss'],
+          : [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
         include: [path.resolve(__dirname, 'src/client')],
       },
       {
@@ -259,38 +251,33 @@ const webpackConfig = {
       // set the current working directory for displaying module paths
       cwd: process.cwd(),
     }),
-    autoWebPlugin,
+    new HTMLWebpackPlugin({
+      template: path.resolve(__dirname, 'src/client/template.html'),
+      filename: 'index.html',
+      pageConfig: JSON.stringify({
+        testParam: 'testParam',
+      }),
+      isProd: isProd,
+      minify: {
+        //是否去除空格，默认false
+        collapseWhitespace: true,
+        //是否压缩html里的css（使用clean-css进行的压缩） 默认值false；
+        minifyCSS: true,
+        //是否压缩html里的js（使用uglify-js进行的压缩）
+        minifyJS: true,
+      },
+      hash: true,
+    }),
     // 开启 Scope Hoisting
     new ModuleConcatenationPlugin(),
-    // HappyPack 加速构建
-    new HappyPack({
-      // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
-      id: 'ts',
-      threadPool: happyThreadPool,
-      loaders: [
-        {
-          loader: 'ts-loader',
-          options: {
-            configFile: 'src/client/tsconfig.json',
-            getCustomTransformers: __dirname + '/tsCustomTransformer.js',
-            happyPackMode: true,
-            // disable type checker - we will use it in fork plugin
-            transpileOnly: true,
-          },
-        },
-      ],
+    new ProgressBarPlugin({
+      format:
+        '  build [:bar] ' +
+        chalk.green.bold(':percent') +
+        ' (:elapsed seconds)',
+      clear: false,
+      width: 60,
     }),
-    new HappyPack({
-      id: 'postcss',
-      threadPool: happyThreadPool,
-      loaders: ['css-loader', 'postcss-loader'],
-    }),
-    new HappyPack({
-      id: 'css',
-      threadPool: happyThreadPool,
-      loaders: ['css-loader'],
-    }),
-    new DashboardPlugin(dashboard.setData),
   ]
     .concat(
       isProd
@@ -333,7 +320,6 @@ if (isDev) {
     port: 8888,
     inline: false,
     hot: false,
-    quiet: true,
   };
 }
 

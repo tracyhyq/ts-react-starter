@@ -2,12 +2,12 @@
  * @description: 列表主页面
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-26 19:38:29
+ * @LastEditTime: 2019-08-28 16:12:45
  */
 
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { RouteComponentProps } from 'react-router-dom';
+import { Link, RouteComponentProps } from 'react-router-dom';
 import { Table } from 'antd';
 import { IListItem } from '@I/server/list';
 import listStore from '../store';
@@ -22,7 +22,7 @@ const columns = [
     title: '姓名',
     dataIndex: 'name',
     render(text: string, record: IListItem) {
-      return <a href={`/detail/${record.key}`}>{text}</a>;
+      return <Link to={`/list/detail/${record.key}`}>{text}</Link>;
     },
   },
   {
