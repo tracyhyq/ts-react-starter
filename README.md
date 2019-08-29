@@ -2,7 +2,7 @@
  * @description: 
  * @author: tracyqiu
  * @LastEditors: tracyqiu
- * @LastEditTime: 2019-08-23 16:25:30
+ * @LastEditTime: 2019-08-29 16:27:18
  -->
 # ts-react-starter
 
@@ -28,4 +28,4 @@ $ npm run start:client
 $ npm run start:server
 ```
 
-访问：http://localhost:3001/list.html
+访问：http://localhost:3001/#/list
